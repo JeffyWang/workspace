@@ -1,8 +1,9 @@
 'use strict';
 
 angular.module('towerApp')
-  .controller('ProjectCtrl', ['$scope', '$routeParams', '$http' ,function ($scope, $routeParams, $http) {
+  .controller('ProjectCtrl', ['$scope', '$routeParams', '$http', '$dialogs',function ($scope, $routeParams, $http, $dialogs) {
 
+       
         $scope.projectId = $routeParams.project;
 
     	$http.get('/api/projects/'+$routeParams.project).success(function(data){
@@ -23,6 +24,7 @@ angular.module('towerApp')
     	$scope.newDiscuss = function(discuss){
     		
     		$http.post('/api/projects/'+$routeParams.project+'/discuss/new', discuss).success(function(data){
+                console.log(data);
     		 	$scope.discusses.unshift(data);
                 $scope.showNewDissuss = false;
                 $scope.discuss = {};
@@ -56,6 +58,12 @@ angular.module('towerApp')
             $http.delete('/api/tasks/'+task._id).success(function(data){
                 $scope.tasks.splice(index, 1);
             });
+           
+        };
+
+        $scope.removeTodo = function(todo) {
+
+           console.log(todo);
            
         };
 
