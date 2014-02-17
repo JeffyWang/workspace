@@ -10,84 +10,108 @@ angular.module('towerApp')
     		$scope.project = data;
     	});
 
-    	$http.get('/api/projects/'+$routeParams.project+'/discuss').success(function(data){
-    		$scope.discusses = data;
-    	});
+  }])
+  .controller('SubDiscussCtrl', ['$scope', '$routeParams', '$http', '$dialogs',function ($scope, $routeParams, $http, $dialogs) {
 
-        $http.get('/api/projects/'+$routeParams.project+'/tasks').success(function(data){
-            $scope.tasks = data;
+    $scope.showNewDissuss = false;
+    $http.get('/api/projects/'+$routeParams.project+'/discuss').success(function(data){
+            $scope.discusses = data;
+    });
+    $scope.newDiscuss = function(discuss){
+            
+        $http.post('/api/projects/'+$routeParams.project+'/discuss/new', discuss).success(function(data){
+            $scope.discusses.unshift(data);
+            $scope.showNewDissuss = false;
+            $scope.discuss = {};
         });
 
-        $scope.showNewDissuss = false;
-        $scope.showNewTask = false;
+    };
 
-    	$scope.newDiscuss = function(discuss){
-    		
-    		$http.post('/api/projects/'+$routeParams.project+'/discuss/new', discuss).success(function(data){
-                console.log(data);
-    		 	$scope.discusses.unshift(data);
-                $scope.showNewDissuss = false;
-                $scope.discuss = {};
-    		});
+  }])
+  .controller('SubTasksCtrl', ['$scope', '$routeParams', '$http', '$dialogs',function ($scope, $routeParams, $http, $dialogs) {
 
-    	};
+    $scope.showNewTask = false;
 
-        $scope.newTask = function(taskList){
+    $http.get('/api/projects/'+$routeParams.project+'/tasks').success(function(data){
+            $scope.tasks = data;
+    });  
 
-            taskList.project = $routeParams.project;
-            $http.post('/api/projects/'+$routeParams.project+'/tasks/new', taskList).success(function(data){
-                data.addTodoing = true;
-                $scope.tasks.unshift(data);
-                $scope.showNewTask = false;
-                $scope.tasklist = {};
-            });
+    $http.get('/api/projects/'+$routeParams.project+'/tasks/completed').success(function(data){
+        $scope.completedTodos = data;
+    });
 
-        };
+    $scope.newTask = function(taskList){
 
-        $scope.newTodo = function(index, todo){
-            var task = $scope.tasks[index];
-            $http.post('/api/tasks/'+task._id+'/todo/new', todo).success(function(data){
-                task.todos.push(data);
-                $scope._todo = {};
-            });
-        };
+        taskList.project = $routeParams.project;
+        $http.post('/api/projects/'+$routeParams.project+'/tasks/new', taskList).success(function(data){
+            data.addTodoing = true;
+            $scope.tasks.unshift(data);
+            $scope.showNewTask = false;
+            $scope.tasklist = {};
+        });
 
-        $scope.removeTask = function(index) {
+    };
 
-            var task = $scope.tasks[index];
-            $http.delete('/api/tasks/'+task._id).success(function(data){
-                $scope.tasks.splice(index, 1);
-            });
-           
-        };
+    $scope.newTodo = function(index, todo){
+        var task = $scope.tasks[index];
+        $http.post('/api/tasks/'+task._id+'/todos/new', todo).success(function(data){
+            task.todos.push(data);
+            todo = {};
+        });
+    };
 
-        $scope.removeTodo = function(todo) {
+    $scope.updateTodo = function(task, todo) {
 
-           console.log(todo);
-           
-        };
+        $http.put('/api/tasks/'+task._id+'/todos/'+todo._id, todo);
 
-        $scope.toggleEditTask = function(index) {
+    };
 
-            var task = $scope.tasks[index];
-            task.editing = !task.editing;
+    $scope.runTodo = function(task, todo) {
+        todo.run = true;
+        $http.put('/api/tasks/'+task._id+'/todos/'+todo._id+'/start');
+    };
 
-        };
+    $scope.stopTodo = function(task, todo) {
+        todo.run = false;
+        $http.put('/api/tasks/'+task._id+'/todos/'+todo._id+'/stop');
+    };
 
-        $scope.toggkeTodoView = function(index){
-            var task = $scope.tasks[index];
-            task.addTodoing = !task.addTodoing;
-        }
+    $scope.removeTodo = function(task, todo) {
+       $http.delete('/api/tasks/'+task._id+'/todos/'+todo._id).success(function(){
+            task.todos.splice(index, 1);
+       });
+       
+    };
 
-        $scope.updateTask = function(task) {
+    $scope.removeTask = function(task) {
 
-            task.editing = !task.editing;
-            $http.put('/api/tasks/'+ task._id, task).success(function(data){
+        $http.delete('/api/tasks/'+task._id).success(function(data){
+            $scope.tasks.splice(index, 1);
+        });
+       
+    };
 
-                task = data;
+    $scope.toggleEditTask = function(index) {
 
-            });
+        var task = $scope.tasks[index];
+        task.editing = !task.editing;
 
-        };
+    };
+
+    $scope.toggkeTodoView = function(index){
+        var task = $scope.tasks[index];
+        task.addTodoing = !task.addTodoing;
+    }
+
+    $scope.updateTask = function(task) {
+
+        task.editing = !task.editing;
+        $http.put('/api/tasks/'+ task._id, task).success(function(data){
+
+            task = data;
+
+        });
+
+    };
 
   }]);
